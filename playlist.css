@@ -1,0 +1,94 @@
+/* בסיס נקי ומסודר */
+:root {
+    --bg: #f7f9fc;
+    --text: #111827;
+    --accent: #1e40af;
+    --border: #e5e7eb;
+    --header: #0ea5e9;
+}
+
+* {
+    box-sizing: border-box
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0
+}
+
+body {
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.topbar {
+    background: linear-gradient(180deg, #38bdf8, var(--header));
+    color: white;
+    padding: 14px 20px;
+    border-bottom: 3px solid #3b82f6;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: .3px
+}
+
+.container {
+    max-width: 1100px;
+    margin: 20px auto;
+    padding: 0 16px
+}
+
+table.playlist {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+
+.playlist thead th {
+    background: #eff6ff;
+    color: #1f2937;
+    font-weight: 700;
+    text-align: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.playlist td {
+    padding: 14px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    word-wrap: break-word;
+}
+
+.playlist tr:last-child td {
+    border-bottom: none
+}
+
+/* תא הווידאו */
+td.video a {
+    display: inline-block;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+td.video img {
+    display: block;
+    width: 260px;
+    /* דומה לגודל שבתמונה */
+    height: auto;
+}
+
+/* היי-לייט ב-hover */
+.playlist tbody tr:hover td {
+    background: #fafafa;
+}
