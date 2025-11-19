@@ -1,48 +1,60 @@
 document.addEventListener("DOMContentLoaded", () => {
-    pageLoaded()
+    pageLoaded();
 });
-let txt1;
-let txt2;
-let btn;
+let txt1
+let txt2
+let btn
+let lblRes
+
 function pageLoaded() {
     txt1 = document.getElementById('txt1');
-    txt2 = document.querySelector('#txt2');
+    txt2 = document.getElementById('txt2');
     btn = document.getElementById('btnCalc');
-    lblRes = document.getElementById('btnRes');
-    txt1.addEventListener('click', () => {
+    lblRes = document.getElementById('lblRes');
+    btn.addEventListener('click', () => {
         calculate();
     });
+
+
 }
 
 function calculate() {
-    let txt1Text = txt1.value;
-    let num1 = parseInt(txt1Text);
+    let txt1text = txt1.value;
+    let num1 = parseInt(txt1text);
 
-    let txt2Text = txt2.value;
-    let num2 = parseInt(txt2Text);
+    let txt2text = txt2.value;
+    let num2 = parseInt(txt2text);
 
-    let res = num1 + num2
+    let res = num1 + num2;
+
     lblRes.innerText = res;
-
 }
+
+
 
 
 const btn2 = document.getElementById("btn2");
+//this is callback
 btn2.addEventListener("click", () => {
-    print("btn2 clicked: " + btn2.id + "|" + btn2.innerText);
 
+    print("btn2 clicked : " + btn2.id + btn2.value);
 });
-
-//btn2.addEventListener("click",func1)
 
 
 function print(msg) {
-    //--Get Text Area Element Refernce
+    //--get text area element reference 
     const ta = document.getElementById("output");
+    //write message to textArea text
     if (ta) ta.value = msg;
+    //write log
     else console.log(msg);
 }
 
+
+
+// =============================================
+// STEP 1: JS NATIVE TYPES, USEFUL TYPES & OPERATIONS
+// =============================================
 function demoNative() {
     let out = "=== STEP 1: NATIVE TYPES ===\n";
 
@@ -79,5 +91,7 @@ function demoNative() {
     const result = calc(10, 20, (x, y) => x + y);
     out += "\n[Callback] calc(10,20, x+y ) = " + result;
 
+    //print to log
     print(out);
 }
+
