@@ -24,6 +24,16 @@ function pageLoaded() {
         print("btn2 clicked: " + btn2.id + " | " + btn2.innerText, true);
     });
 }
+function setValidationState(inputElement, isValid) {
+    if (isValid) {
+        inputElement.classList.add("is-valid");
+        inputElement.classList.remove("is-invalid");
+    } else {
+        inputElement.classList.add("is-invalid");
+        inputElement.classList.remove("is-valid");
+    }
+}
+
 
 // Calculator function: uses selected operator and logs the operation
 function calculate() {
@@ -31,7 +41,14 @@ function calculate() {
     const num2 = parseFloat(txt2.value);
     const op = opSelect.value;
 
-    if (isNaN(num1) || isNaN(num2)) {
+    const valid1 = !isNaN(num1);
+    const valid2 = !isNaN(num2);
+
+    // Update Bootstrap validation classes
+    setValidationState(txt1, valid1);
+    setValidationState(txt2, valid2);
+
+    if (!valid1 || !valid2) {
         lblRes.innerText = "Please enter valid numbers";
         print("Error: invalid numeric input", true);
         return;
@@ -51,8 +68,9 @@ function calculate() {
             break;
         case "/":
             if (num2 === 0) {
+                setValidationState(txt2, false);  // division by zero = invalid
                 lblRes.innerText = "Cannot divide by zero";
-                print(`Error: division by zero (input: ${num1} / ${num2})`, true);
+                print(`Error: division by zero (${num1} / ${num2})`, true);
                 return;
             }
             res = num1 / num2;
@@ -63,10 +81,10 @@ function calculate() {
 
     lblRes.innerText = res;
 
-    // log operation to the textarea
-    const logLine = `${num1} ${op} ${num2} = ${res}`;
+    const logLine = `Calc: ${num1} ${op} ${num2} = ${res}`;
     print(logLine, true);
 }
+
 
 // Print function with append mode
 // append = false → replace content
