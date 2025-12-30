@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>My Playlists</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f6f7fb;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .sidebar,
+        .content {
+            background: #fff;
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 12px;
+        }
+
+        .sidebar {
+            padding: 14px;
+        }
+
+        .content {
+            padding: 14px;
+            min-height: 70vh;
+        }
+
+        .playlist-item {
+            cursor: pointer;
+        }
+
+        .playlist-item.active {
+            background: rgba(13, 110, 253, .08);
+            border-color: rgba(13, 110, 253, .3);
+        }
+
+        .item-card img.thumb {
+            width: 140px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, .1);
+        }
+
+        .item-card {
+            border: 1px solid rgba(0, 0, 0, .08);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .muted {
+            color: #6c757d;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 992px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-semibold" href="search.html">YouTube Playlists</a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <span class="text-white me-2">Hello, <b id="helloUser">...</b></span>
+                <a class="btn btn-outline-light btn-sm" href="search.html">Search</a>
+                <button class="btn btn-danger btn-sm" id="btnLogout">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="app-shell">
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div>
+                        <div class="fw-bold">My Library</div>
+                        <div class="muted small">Playlists</div>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btnNewPlaylist">+ New</button>
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Filter</span>
+                    <input class="form-control" id="filterPlaylists" placeholder="Type playlist name..." />
+                </div>
+
+                <div id="playlistsList" class="d-grid gap-2"></div>
+            </aside>
+
+            <!-- Main content -->
+            <main class="content">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <div class="fw-bold fs-5" id="activePlaylistTitle">Select a playlist</div>
+                        <div class="muted small" id="activePlaylistMeta"></div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <button class="btn btn-outline-danger btn-sm" id="btnDeletePlaylist" disabled>Delete
+                            Playlist</button>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-lg-5">
+                        <div class="input-group">
+                            <span class="input-group-text">Search</span>
+                            <input class="form-control" id="filterItems" placeholder="Search inside playlist..." />
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <select class="form-select" id="sortItems">
+                            <option value="az">Sort: A → Z</option>
+                            <option value="rating">Sort: Rating (high → low)</option>
+                            <option value="newest">Sort: Newest</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="input-group">
+                            <input type="file" class="form-control" id="mp3File" accept=".mp3,audio/mpeg" />
+                            <button class="btn btn-outline-primary" id="btnUploadMp3" disabled>Upload MP3</button>
+                        </div>
+                        <div class="muted small mt-1">If your server supports MP3 upload, it will be added to this
+                            playlist.</div>
+                    </div>
+                </div>
+
+                <div id="itemsContainer" class="d-grid gap-2"></div>
+
+                <div id="emptyState" class="alert alert-info mt-3 d-none">
+                    No playlist selected. Pick one from the left.
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <div id="appToast" class="toast align-items-center text-bg-dark border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMsg">...</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Playlist Modal -->
+    <div class="modal fade" id="newPlaylistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <form class="modal-content" id="newPlaylistForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Playlist name</label>
+                    <input class="form-control" id="newPlaylistName" placeholder="e.g. Favorites" required minlength="1"
+                        maxlength="40" />
+                    <div class="muted small mt-2">Tip: pick a short, clear name.</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmTitle">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="confirmBody">Are you sure?</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" type="button" id="confirmYes">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // -------------------------
+        // Helpers
+        // -------------------------
+        const toastEl = document.getElementById("appToast");
+        const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+        function showToast(msg) {
+            document.getElementById("toastMsg").textContent = msg;
+            toast.show();
+        }
+
+        async function apiFetch(url, options = {}) {
+            const res = await fetch(url, {
+                credentials: "include",
+                headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+                ...options
+            });
+            let data = null;
+            try { data = await res.json(); } catch { /* ignore */ }
+            return { res, data };
+        }
+
+        function getQueryParam(name) {
+            const u = new URL(location.href);
+            return u.searchParams.get(name);
+        }
+        function setQueryParam(name, value) {
+            const u = new URL(location.href);
+            if (value == null) u.searchParams.delete(name);
+            else u.searchParams.set(name, value);
+            history.replaceState({}, "", u.toString());
+        }
+
+        // Normalize different possible shapes from server
+        function normalizePlaylists(payload) {
+            if (!payload) return [];
+            if (Array.isArray(payload)) return payload;
+            if (Array.isArray(payload.playlists)) return payload.playlists;
+            // Sometimes server may return { username: [...] }
+            const keys = Object.keys(payload);
+            if (keys.length === 1 && Array.isArray(payload[keys[0]])) return payload[keys[0]];
+            return [];
+        }
+
+        // Try multiple endpoint patterns (makes it robust)
+        async function tryEndpoints(endpointList, optionsBuilder) {
+            let last = null;
+            for (const url of endpointList) {
+                const opts = optionsBuilder(url);
+                const out = await apiFetch(url, opts);
+                last = out;
+                if (out.res.status !== 404) return out; // stop at first non-404
+            }
+            return last;
+        }
+
+        // -------------------------
+        // State
+        // -------------------------
+        let currentUser = null;
+        let playlists = [];
+        let activePlaylistId = null;
+
+        const elHello = document.getElementById("helloUser");
+        const elPlaylistsList = document.getElementById("playlistsList");
+        const elFilterPlaylists = document.getElementById("filterPlaylists");
+
+        const elActiveTitle = document.getElementById("activePlaylistTitle");
+        const elActiveMeta = document.getElementById("activePlaylistMeta");
+        const elItemsContainer = document.getElementById("itemsContainer");
+        const elEmptyState = document.getElementById("emptyState");
+
+        const elFilterItems = document.getElementById("filterItems");
+        const elSortItems = document.getElementById("sortItems");
+
+        const btnDeletePlaylist = document.getElementById("btnDeletePlaylist");
+        const btnUploadMp3 = document.getElementById("btnUploadMp3");
+        const mp3File = document.getElementById("mp3File");
+
+        // -------------------------
+        // Auth + bootstrap
+        // -------------------------
+        async function loadMeOrRedirect() {
+            const { res, data } = await apiFetch("/api/me", { method: "GET" });
+            if (res.status === 401 || res.status === 403) {
+                location.href = "login.html";
+                return false;
+            }
+            currentUser = data?.username || data?.user?.username || data?.name || "User";
+            elHello.textContent = currentUser;
+            return true;
+        }
+
+        async function doLogout() {
+            // Try common logout endpoints
+            const { res } = await tryEndpoints(
+                ["/api/logout", "/logout"],
+                () => ({ method: "POST", body: JSON.stringify({}) })
+            );
+            if (res && (res.ok || res.status === 204)) {
+                showToast("Logged out");
+            }
+            sessionStorage.removeItem("currentUser");
+            location.href = "login.html";
+        }
+
+        // -------------------------
+        // Playlists
+        // -------------------------
+        async function fetchPlaylists() {
+            const { res, data } = await apiFetch("/api/playlists", { method: "GET" });
+            if (!res.ok) {
+                showToast("Failed to load playlists");
+                return [];
+            }
+            return normalizePlaylists(data);
+        }
+
+        function renderPlaylistsList() {
+            const q = (elFilterPlaylists.value || "").trim().toLowerCase();
+            const filtered = playlists.filter(p => (p.name || "").toLowerCase().includes(q));
+
+            elPlaylistsList.innerHTML = "";
+            if (filtered.length === 0) {
+                const div = document.createElement("div");
+                div.className = "alert alert-light border";
+                div.textContent = "No playlists found.";
+                elPlaylistsList.appendChild(div);
+                return;
+            }
+
+            for (const p of filtered) {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn btn-outline-secondary text-start playlist-item";
+                if (String(p.id) === String(activePlaylistId)) btn.classList.add("active");
+
+                const count = Array.isArray(p.items) ? p.items.length : 0;
+                btn.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-semibold nowrap" title="${escapeHtml(p.name || "")}">${escapeHtml(p.name || "Untitled")}</div>
+            <span class="badge text-bg-secondary">${count}</span>
+          </div>
+        `;
+
+                btn.addEventListener("click", () => {
+                    setActivePlaylist(p.id);
+                });
+
+                elPlaylistsList.appendChild(btn);
+            }
+        }
+
+        function setActivePlaylist(id) {
+            activePlaylistId = String(id);
+            setQueryParam("id", activePlaylistId);
+            renderPlaylistsList();
+            renderActivePlaylist();
+        }
+
+        function getActivePlaylist() {
+            return playlists.find(p => String(p.id) === String(activePlaylistId)) || null;
+        }
+
+        async function createPlaylist(name) {
+            const payload = { name };
+            const { res, data } = await apiFetch("/api/playlists", { method: "POST", body: JSON.stringify(payload) });
+
+            if (!res.ok) {
+                showToast(data?.error || "Failed to create playlist");
+                return null;
+            }
+
+            // Server might return created playlist or full list
+            if (data && data.id) return data;
+            return { id: data?.playlistId || null, name };
+        }
+
+        async function deletePlaylist(playlistId) {
+            // Try common delete patterns
+            const endpoints = [
+                `/api/playlists/${encodeURIComponent(playlistId)}`,
+                `/api/playlists?id=${encodeURIComponent(playlistId)}`
+            ];
+            const out = await tryEndpoints(endpoints, () => ({ method: "DELETE" }));
+            return out;
+        }
+
+        // -------------------------
+        // Items
+        // -------------------------
+        function computeSortedItems(items) {
+            const list = [...(items || [])];
+
+            const q = (elFilterItems.value || "").trim().toLowerCase();
+            const filtered = q
+                ? list.filter(it => (it.title || "").toLowerCase().includes(q))
+                : list;
+
+            const sort = elSortItems.value;
+            if (sort === "az") {
+                filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+            } else if (sort === "rating") {
+                filtered.sort((a, b) => (Number(b.rating || 0) - Number(a.rating || 0)));
+            } else if (sort === "newest") {
+                filtered.sort((a, b) => (Number(b.addedAt || 0) - Number(a.addedAt || 0)));
+            }
+            return filtered;
+        }
+
+        function renderActivePlaylist() {
+            const pl = getActivePlaylist();
+
+            if (!pl) {
+                elActiveTitle.textContent = "Select a playlist";
+                elActiveMeta.textContent = "";
+                elItemsContainer.innerHTML = "";
+                elEmptyState.classList.remove("d-none");
+                btnDeletePlaylist.disabled = true;
+                btnUploadMp3.disabled = true;
+                return;
+            }
+
+            elEmptyState.classList.add("d-none");
+            btnDeletePlaylist.disabled = false;
+            btnUploadMp3.disabled = false;
+
+            const count = Array.isArray(pl.items) ? pl.items.length : 0;
+            elActiveTitle.textContent = pl.name || "Untitled";
+            elActiveMeta.textContent = `${count} item(s) • id=${pl.id}`;
+
+            const items = computeSortedItems(pl.items || []);
+            elItemsContainer.innerHTML = "";
+
+            if (items.length === 0) {
+                const empty = document.createElement("div");
+                empty.className = "alert alert-info";
+                empty.textContent = "This playlist is empty.";
+                elItemsContainer.appendChild(empty);
+                return;
+            }
+
+            for (const it of items) {
+                elItemsContainer.appendChild(renderItemCard(pl, it));
+            }
+        }
+
+        function renderItemCard(playlist, item) {
+            const card = document.createElement("div");
+            card.className = "item-card";
+
+            const type = item.type || (item.videoId ? "youtube" : "mp3");
+            const title = item.title || "Untitled";
+            const rating = Number(item.rating || 0);
+
+            const leftHtml = (type === "youtube")
+                ? `
+          <div class="d-flex gap-3 align-items-start">
+            <img class="thumb" src="${escapeAttr(item.thumbnailUrl || "")}" alt="">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">${escapeHtml(title)}</div>
+              <div class="muted small">Video ID: ${escapeHtml(item.videoId || "")}</div>
+              <div class="muted small">Views: ${escapeHtml(String(item.views ?? ""))} • Duration: ${escapeHtml(String(item.duration ?? ""))}</div>
+            </div>
+          </div>
+        `
+                : `
+          <div class="d-flex gap-3 align-items-start">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">${escapeHtml(title)}</div>
+              <div class="muted small">Type: MP3</div>
+              ${item.url ? `<audio controls style="width:100%; margin-top:8px;"><source src="${escapeAttr(item.url)}" type="audio/mpeg"></audio>` : ""}
+            </div>
+          </div>
+        `;
+
+            card.innerHTML = `
+        <div class="d-flex flex-wrap justify-content-between gap-2">
+          <div class="flex-grow-1" style="min-width: 320px;">
+            ${leftHtml}
+          </div>
+
+          <div class="d-flex flex-column gap-2 align-items-stretch" style="min-width: 230px;">
+            ${type === "youtube" ? `
+              <a class="btn btn-outline-secondary btn-sm" target="_blank" href="https://www.youtube.com/watch?v=${encodeURIComponent(item.videoId || "")}">Open on YouTube</a>
+            ` : ""}
+
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">Rating</span>
+              <select class="form-select" data-role="rating">
+                ${[0, 1, 2, 3, 4, 5].map(v => `<option value="${v}" ${v === rating ? "selected" : ""}>${v}</option>`).join("")}
+              </select>
+            </div>
+
+            <button class="btn btn-outline-danger btn-sm" data-role="remove">Remove</button>
+
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">Move</span>
+              <select class="form-select" data-role="moveTarget">
+                <option value="">Select...</option>
+                ${playlists
+                    .filter(p => String(p.id) !== String(playlist.id))
+                    .map(p => `<option value="${escapeAttr(String(p.id))}">${escapeHtml(p.name || "Untitled")}</option>`)
+                    .join("")}
+              </select>
+              <button class="btn btn-outline-primary" data-role="moveBtn">Go</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+            // Remove
+            card.querySelector('[data-role="remove"]').addEventListener("click", async () => {
+                await removeItemFromPlaylist(playlist.id, item.id);
+            });
+
+            // Rating update (best-effort)
+            card.querySelector('[data-role="rating"]').addEventListener("change", async (e) => {
+                const newRating = Number(e.target.value);
+                await updateItemRating(playlist.id, item.id, newRating);
+            });
+
+            // Move
+            card.querySelector('[data-role="moveBtn"]').addEventListener("click", async () => {
+                const targetId = card.querySelector('[data-role="moveTarget"]').value;
+                if (!targetId) return;
+                await moveItem(playlist.id, item.id, targetId);
+            });
+
+            return card;
+        }
+
+        async function removeItemFromPlaylist(playlistId, itemId) {
+            const endpoints = [
+                `/api/playlists/${encodeURIComponent(playlistId)}/items/${encodeURIComponent(itemId)}`,
+                `/api/playlists/${encodeURIComponent(playlistId)}/items?id=${encodeURIComponent(itemId)}`
+            ];
+
+            const { res, data } = await tryEndpoints(endpoints, () => ({ method: "DELETE" }));
+
+            if (!res || !res.ok) {
+                showToast(data?.error || `Remove failed (status ${res ? res.status : "?"})`);
+                return;
+            }
+
+            showToast("Item removed");
+            await refreshAll({ keepActive: true });
+        }
+
+        async function updateItemRating(playlistId, itemId, rating) {
+            // Try PATCH then PUT then a dedicated /rating endpoint
+            const attempts = [
+                { url: `/api/playlists/${encodeURIComponent(playlistId)}/items/${encodeURIComponent(itemId)}`, method: "PATCH" },
+                { url: `/api/playlists/${encodeURIComponent(playlistId)}/items/${encodeURIComponent(itemId)}`, method: "PUT" },
+                { url: `/api/playlists/${encodeURIComponent(playlistId)}/items/${encodeURIComponent(itemId)}/rating`, method: "PATCH" }
+            ];
+
+            for (const a of attempts) {
+                const { res } = await apiFetch(a.url, { method: a.method, body: JSON.stringify({ rating }) });
+                if (res.status === 404) continue;
+                if (!res.ok) {
+                    showToast(`Rating update failed (${res.status})`);
+                    return;
+                }
+                showToast("Rating updated");
+                await refreshAll({ keepActive: true });
+                return;
+            }
+
+            // If all 404, server just doesn't support rating update
+            showToast("Server does not support rating update (endpoint not found).");
+        }
+
+        async function moveItem(sourcePlaylistId, itemId, targetPlaylistId) {
+            // Preferred: server supports a move endpoint
+            const moveEndpoints = [
+                `/api/playlists/${encodeURIComponent(sourcePlaylistId)}/items/${encodeURIComponent(itemId)}/move`,
+                `/api/playlists/${encodeURIComponent(sourcePlaylistId)}/items/move`
+            ];
+
+            let out = await tryEndpoints(moveEndpoints, (url) => {
+                return { method: "POST", body: JSON.stringify({ targetPlaylistId, itemId }) };
+            });
+
+            if (out?.res && out.res.status !== 404) {
+                if (!out.res.ok) {
+                    showToast(out.data?.error || `Move failed (${out.res.status})`);
+                    return;
+                }
+                showToast("Item moved");
+                await refreshAll({ keepActive: true });
+                return;
+            }
+
+            // Fallback: copy to target (POST items) then delete from source
+            const srcPl = playlists.find(p => String(p.id) === String(sourcePlaylistId));
+            const item = (srcPl?.items || []).find(it => String(it.id) === String(itemId));
+            if (!item) {
+                showToast("Move failed: item not found in memory");
+                return;
+            }
+
+            // Add to target
+            const addEndpoints = [
+                `/api/playlists/${encodeURIComponent(targetPlaylistId)}/items`,
+                `/api/playlists/${encodeURIComponent(targetPlaylistId)}/items/add`
+            ];
+
+            const addOut = await tryEndpoints(addEndpoints, () => ({ method: "POST", body: JSON.stringify(item) }));
+            if (!addOut.res || !addOut.res.ok) {
+                showToast(addOut.data?.error || `Copy failed (${addOut.res ? addOut.res.status : "?"})`);
+                return;
+            }
+
+            // Remove from source
+            await removeItemFromPlaylist(sourcePlaylistId, itemId);
+        }
+
+        async function uploadMp3ToPlaylist(playlistId, file) {
+            const endpoints = [
+                `/api/playlists/${encodeURIComponent(playlistId)}/upload`,
+                `/api/playlists/${encodeURIComponent(playlistId)}/mp3`,
+                `/api/playlists/${encodeURIComponent(playlistId)}/items/upload`
+            ];
+
+            const fieldNames = ["file", "mp3", "audio"];
+
+            for (const url of endpoints) {
+                // if endpoint doesn't exist -> 404, try next endpoint
+                // if endpoint exists but rejects field name -> try next field name
+                for (const field of fieldNames) {
+                    const form = new FormData();
+                    form.append(field, file);
+
+                    const res = await fetch(url, { method: "POST", credentials: "include", body: form });
+
+                    if (res.status === 404) break; // endpoint not found, stop trying fields for this endpoint
+
+                    if (res.ok) {
+                        showToast("MP3 uploaded");
+                        await refreshAll({ keepActive: true });
+                        return;
+                    }
+
+                    // Try to read server message (helps debugging)
+                    let msg = "";
+                    try { msg = await res.text(); } catch { }
+                    console.warn("Upload failed:", url, "field:", field, "status:", res.status, "body:", msg);
+
+                    // If server complains about field name, try next field name
+                    // Otherwise, stop early because it's a real server bug (500)
+                    if (res.status >= 500) {
+                        showToast(`Upload failed (${res.status})`);
+                        return;
+                    }
+                }
+            }
+
+            showToast("Upload endpoint not found on server.");
+        }
+
+
+        // -------------------------
+        // Refresh & init
+        // -------------------------
+        async function refreshAll({ keepActive } = {}) {
+            playlists = await fetchPlaylists();
+            renderPlaylistsList();
+
+            // determine active playlist
+            if (!keepActive) {
+                const fromQs = getQueryParam("id");
+                activePlaylistId = fromQs ? String(fromQs) : null;
+            }
+
+            if (!activePlaylistId || !playlists.some(p => String(p.id) === String(activePlaylistId))) {
+                activePlaylistId = playlists.length ? String(playlists[0].id) : null;
+                if (activePlaylistId) setQueryParam("id", activePlaylistId);
+            }
+
+            renderPlaylistsList();
+            renderActivePlaylist();
+        }
+
+        // Escape helpers
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, s => ({
+                "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;"
+            }[s]));
+        }
+        function escapeAttr(str) { return escapeHtml(str); }
+
+        // -------------------------
+        // UI events
+        // -------------------------
+        document.getElementById("btnLogout").addEventListener("click", doLogout);
+
+        elFilterPlaylists.addEventListener("input", renderPlaylistsList);
+        elFilterItems.addEventListener("input", renderActivePlaylist);
+        elSortItems.addEventListener("change", renderActivePlaylist);
+
+        mp3File.addEventListener("change", () => {
+            btnUploadMp3.disabled = !getActivePlaylist() || !mp3File.files || mp3File.files.length === 0;
+        });
+
+        btnUploadMp3.addEventListener("click", async () => {
+            const pl = getActivePlaylist();
+            if (!pl) return;
+            if (!mp3File.files || mp3File.files.length === 0) return;
+            await uploadMp3ToPlaylist(pl.id, mp3File.files[0]);
+            mp3File.value = "";
+            btnUploadMp3.disabled = true;
+        });
+
+        // New playlist modal
+        const newPlaylistModalEl = document.getElementById("newPlaylistModal");
+        const newPlaylistModal = new bootstrap.Modal(newPlaylistModalEl);
+        document.getElementById("btnNewPlaylist").addEventListener("click", () => {
+            document.getElementById("newPlaylistName").value = "";
+            newPlaylistModal.show();
+        });
+
+        document.getElementById("newPlaylistForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("newPlaylistName").value.trim();
+            if (!name) return;
+            const created = await createPlaylist(name);
+            newPlaylistModal.hide();
+            await refreshAll({ keepActive: false });
+            // select created if we can find it by name
+            const match = playlists.find(p => (p.name || "").toLowerCase() === name.toLowerCase());
+            if (match) setActivePlaylist(match.id);
+            else showToast("Playlist created");
+        });
+
+        // Delete playlist confirm
+        const confirmModalEl = document.getElementById("confirmModal");
+        const confirmModal = new bootstrap.Modal(confirmModalEl);
+        const confirmYes = document.getElementById("confirmYes");
+
+        btnDeletePlaylist.addEventListener("click", () => {
+            const pl = getActivePlaylist();
+            if (!pl) return;
+            document.getElementById("confirmTitle").textContent = "Delete playlist";
+            document.getElementById("confirmBody").textContent = `Delete "${pl.name}"? This cannot be undone.`;
+            confirmYes.onclick = async () => {
+                confirmModal.hide();
+                const { res, data } = await deletePlaylist(pl.id);
+                if (!res || !res.ok) {
+                    showToast(data?.error || `Delete failed (${res ? res.status : "?"})`);
+                    return;
+                }
+                showToast("Playlist deleted");
+                activePlaylistId = null;
+                await refreshAll({ keepActive: false });
+            };
+            confirmModal.show();
+        });
+
+        // -------------------------
+        // Start
+        // -------------------------
+        (async function init() {
+            const ok = await loadMeOrRedirect();
+            if (!ok) return;
+            await refreshAll({ keepActive: false });
+            showToast("Playlists loaded");
+        })();
+    </script>
+</body>
+
+</html>

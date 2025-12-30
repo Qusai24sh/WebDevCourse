@@ -1,0 +1,35 @@
+{
+  "qusaishkeer1": [
+    {
+      "id": "1767126738737451",
+      "name": "Favorites",
+      "items": [
+        {
+          "id": "1767134324152407",
+          "type": "mp3",
+          "title": "Eminem - Mockingbird.mp3",
+          "fileName": "1767134324094314_Eminem_-_Mockingbird.mp3",
+          "url": "/uploads/1767134324094314_Eminem_-_Mockingbird.mp3",
+          "rating": 3,
+          "addedAt": 1767134324152
+        },
+        {
+          "id": "1767134478002862",
+          "type": "youtube",
+          "videoId": "dQw4w9WgXcQ",
+          "title": "Sample Video (Replace with your API results)",
+          "thumbnailUrl": "https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
+          "duration": "",
+          "views": "",
+          "rating": 5,
+          "addedAt": 1767134478002
+        }
+      ]
+    },
+    {
+      "id": "1767134387477439",
+      "name": "favvv",
+      "items": []
+    }
+  ]
+}
