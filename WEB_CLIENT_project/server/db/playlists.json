@@ -31,5 +31,27 @@
       "name": "favvv",
       "items": []
     }
+  ],
+  "qusaishkeer55": [
+    {
+      "id": "1767140942852758",
+      "name": "Favorites",
+      "items": [
+        {
+          "id": "1767140982815398",
+          "type": "mp3",
+          "title": "Eminem - Mockingbird.mp3",
+          "fileName": "1767140982717807_Eminem_-_Mockingbird.mp3",
+          "url": "/uploads/1767140982717807_Eminem_-_Mockingbird.mp3",
+          "rating": 3,
+          "addedAt": 1767140982815
+        }
+      ]
+    },
+    {
+      "id": "1767141006533166",
+      "name": "favvv",
+      "items": []
+    }
   ]
 }

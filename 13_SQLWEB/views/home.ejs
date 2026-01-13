@@ -1,0 +1,16 @@
+<div class="box">
+    <h2>Home</h2>
+
+    <% if (user) { %>
+        <p>Welcome, <b>
+                <%= user.fullName %>
+            </b> (<%= user.email %>)</p>
+
+        <form method="POST" action="/logout">
+            <button type="submit">Logout</button>
+        </form>
+        <% } else { %>
+            <p>You are not logged in.</p>
+            <a href="/login">Login</a>
+            <% } %>
+</div>
