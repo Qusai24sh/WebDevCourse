@@ -1,7 +1,39 @@
-<div class="box">
-    <h2>Home</h2>
+<!DOCTYPE html>
+<html>
 
-    <% if (user) { %>
+<head>
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial;
+            max-width: 700px;
+            margin: 40px auto;
+        }
+
+        input {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            width: 100%;
+        }
+
+        button {
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        .box {
+            border: 1px solid #ddd;
+            padding: 16px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h2>Home</h2>
+
         <p>Welcome, <b>
                 <%= user.fullName %>
             </b> (<%= user.email %>)</p>
@@ -9,8 +41,7 @@
         <form method="POST" action="/logout">
             <button type="submit">Logout</button>
         </form>
-        <% } else { %>
-            <p>You are not logged in.</p>
-            <a href="/login">Login</a>
-            <% } %>
-</div>
+    </div>
+</body>
+
+</html>
