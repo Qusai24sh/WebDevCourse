@@ -43,6 +43,13 @@
                                                     <%= r.title %>
                                                 </h6>
 
+                                                <!-- Watch -->
+                                                <a href="https://www.youtube.com/watch?v=<%= r.videoId %>"
+                                                    target="_blank" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                                                    ▶ Watch
+                                                </a>
+
+                                                <!-- Add to favorites -->
                                                 <form method="post" action="/favorites/add" class="mt-2">
                                                     <input type="hidden" name="videoId" value="<%= r.videoId %>">
                                                     <input type="hidden" name="title" value="<%= r.title %>">
@@ -81,6 +88,13 @@
                                                     <%= f.title %>
                                                 </h6>
 
+                                                <!-- Watch -->
+                                                <a href="https://www.youtube.com/watch?v=<%= f.videoId %>"
+                                                    target="_blank" class="btn btn-outline-primary btn-sm w-100 mt-2">
+                                                    ▶ Watch
+                                                </a>
+
+                                                <!-- Delete -->
                                                 <form method="post" action="/favorites/<%= f.id %>/delete" class="mt-2">
                                                     <input type="hidden" name="q" value="<%= q %>">
                                                     <button type="submit" class="btn btn-danger btn-sm w-100">
